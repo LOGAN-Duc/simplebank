@@ -110,10 +110,10 @@ func TestStore_TransferTX(t *testing.T) {
 
 func TestStore_TransferTXDeadlock(t *testing.T) {
 	store := NewStore(testDB)
-	account1, err := store.GetAccount(context.Background(), 2)
-	account2, err := store.GetAccount(context.Background(), 3)
-	//account1 := createRandomAccount(t)
-	//account2 := createRandomAccount(t)
+	//account1, err := store.GetAccount(context.Background(), 2)
+	//account2, err := store.GetAccount(context.Background(), 3)
+	account1 := createRandomAccount(t)
+	account2 := createRandomAccount(t)
 	fmt.Println(
 		"before : ",
 		account1.Balance,
