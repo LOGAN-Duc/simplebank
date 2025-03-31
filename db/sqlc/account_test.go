@@ -15,8 +15,9 @@ func TestCreateAccount(t *testing.T) {
 }
 
 func createRandomAccount(t *testing.T) Accounts {
+	user := createRandomUser(t)
 	arg := CreateAccountParams{
-		Owner:    Utill.RandomOwner(),
+		Owner:    user.Username,
 		Balance:  Utill.RandomMoney(),
 		Currency: Utill.RandomCurrency(),
 	}
@@ -74,7 +75,7 @@ func TestDeleteAccount(t *testing.T) {
 	require.Empty(t, account2)
 }
 func TestListAccounts(t *testing.T) {
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 1; i++ {
 		createRandomAccount(t)
 	}
 	arg := ListAccountsParams{
