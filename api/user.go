@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 	"github.com/techschool/simplebank/Utill"
@@ -12,7 +11,7 @@ import (
 
 type createUserRequest struct {
 	Username       string `json:"username" binding:"required,alphanum"`
-	HashedPassword string `json:"hash_password" binding:"required,min=6"`
+	HashedPassword string `json:"password" binding:"required,min=6"`
 	FullName       string `json:"full_name" binding:"required"`
 	Email          string `json:"email" binding:"required,email"`
 }
@@ -23,18 +22,18 @@ func (server *Server) createUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	fmt.Println(rep)
-	hashpassword, err := Utill.HashPassword(rep.HashedPassword)
+	hashPassword, err := Utill.HashPassword(rep.HashedPassword)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 	arg := db.CreateUserParams{
 		Username:       rep.Username,
-		HashedPassword: hashpassword,
+		HashedPassword: hashPassword,
 		FullName:       rep.FullName,
 		Email:          rep.Email,
 	}
+	//arg = db.CreateUserParams{}
 	user, err := server.store.CreateUser(ctx, arg)
 	if err != nil {
 		var pqErr *pq.Error

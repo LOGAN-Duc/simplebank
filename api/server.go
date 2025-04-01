@@ -36,7 +36,7 @@ func NewServer(store db.Store) *Server {
 	//router.PUT("/accounts/:id", server.updateAccount)
 	//router.DELETE("/accounts/:id", server.deleteAccount)
 	//user
-	router.POST("/user", server.createUser)
+	router.POST("/users", server.createUser)
 	//router.GET("/accounts/:id", server.getAccount)
 	//router.GET("/accounts", server.listAccount)
 	//router.PUT("/accounts/:id", server.updateAccount)
