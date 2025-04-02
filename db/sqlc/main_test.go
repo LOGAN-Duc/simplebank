@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
-	"github.com/techschool/simplebank/Utill"
+	"github.com/techschool/simplebank/util"
 	"log"
 	"os"
 	"testing"
@@ -13,7 +13,7 @@ var testQueries *Queries
 var testDB *sql.DB
 
 func TestMain(m *testing.M) {
-	config, err := Utill.LoadConfig("../..")
+	config, err := util.LoadConfig("../..")
 	if err != nil {
 		log.Fatal("could not load config", err)
 	}

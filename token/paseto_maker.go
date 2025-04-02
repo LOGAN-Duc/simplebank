@@ -17,6 +17,7 @@ type PaseMaker struct {
 // swr dung thuat toan Chacha Poly
 func NewPasetoMaker(symmetricKey string) (Maker, error) {
 	if len(symmetricKey) != chacha20poly1305.KeySize {
+
 		return nil, fmt.Errorf("symmetric key must be 32 bytes long at least 32 bytes")
 	}
 	maker := &PaseMaker{

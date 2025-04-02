@@ -3,15 +3,15 @@ package token
 import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/require"
-	"github.com/techschool/simplebank/Utill"
+	"github.com/techschool/simplebank/util"
 	"testing"
 	"time"
 )
 
 func TestPoseMaker(t *testing.T) {
-	maker, err := NewPasetoMaker(Utill.RandomString(32))
+	maker, err := NewPasetoMaker(util.RandomString(32))
 	require.NoError(t, err)
-	username := Utill.RandomOwner()
+	username := util.RandomOwner()
 	duration := time.Minute
 
 	issuedAt := time.Now()
@@ -33,10 +33,10 @@ func TestPoseMaker(t *testing.T) {
 
 // Kiem tra het han token
 func TestExpiredPaseToken(t *testing.T) {
-	maker, err := NewPasetoMaker(Utill.RandomString(32))
+	maker, err := NewPasetoMaker(util.RandomString(32))
 	require.NoError(t, err)
 
-	username := Utill.RandomOwner()
+	username := util.RandomOwner()
 	duration := -time.Minute
 
 	token, err := maker.CreateToken(username, duration)
@@ -50,7 +50,7 @@ func TestExpiredPaseToken(t *testing.T) {
 }
 
 func TestPaseInvalidTokenAlgNone(t *testing.T) {
-	username := Utill.RandomOwner()
+	username := util.RandomOwner()
 	duration := time.Minute
 	payload, err := NewPayLoad(username, duration)
 	require.NoError(t, err)
@@ -59,7 +59,7 @@ func TestPaseInvalidTokenAlgNone(t *testing.T) {
 	token, err := jwtToken.SignedString(jwt.UnsafeAllowNoneSignatureType)
 	require.NoError(t, err)
 
-	maker, err := NewPasetoMaker(Utill.RandomString(32))
+	maker, err := NewPasetoMaker(util.RandomString(32))
 	require.NoError(t, err)
 
 	payload, err = maker.VerifyToken(token)

@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"github.com/stretchr/testify/require"
-	"github.com/techschool/simplebank/Utill"
+	"github.com/techschool/simplebank/util"
 	"testing"
 	"time"
 )
@@ -13,13 +13,13 @@ func TestCreateUser(t *testing.T) {
 }
 
 func createRandomUser(t *testing.T) Users {
-	hashPassword, err := Utill.HashPassword(Utill.RandomString(6))
+	hashPassword, err := util.HashPassword(util.RandomString(6))
 	require.NoError(t, err)
 	arg := CreateUserParams{
-		Username:       Utill.RandomOwner(),
+		Username:       util.RandomOwner(),
 		HashedPassword: hashPassword,
-		FullName:       Utill.RandomOwner(),
-		Email:          Utill.RandomEmail()}
+		FullName:       util.RandomOwner(),
+		Email:          util.RandomEmail()}
 	user, err := testQueries.CreateUser(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, user)

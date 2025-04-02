@@ -7,9 +7,9 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-	"github.com/techschool/simplebank/Utill"
 	mockdb "github.com/techschool/simplebank/db/mock"
 	db "github.com/techschool/simplebank/db/sqlc"
+	"github.com/techschool/simplebank/util"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -28,7 +28,7 @@ func (e eqCreateUserParamsMatcher) Matches(x interface{}) bool {
 		return false
 	}
 	// kiem tra mat khau co khop khong
-	err := Utill.CheckPassword(e.password, arg.HashedPassword)
+	err := util.CheckPassword(e.password, arg.HashedPassword)
 	if err != nil {
 		return false
 	}
@@ -47,7 +47,8 @@ func EqCreateUserParamsMatcher(arg db.CreateUserParams, password string) gomock.
 
 func TestCreateUserAPI(t *testing.T) {
 	user, password := randomUser(t)
-	hashPassword, err := Utill.HashPassword(password)
+	hashPassword, err := util.HashPassword(password)
+
 	require.NoError(t, err)
 	testCase := []struct {
 		name          string
@@ -63,20 +64,26 @@ func TestCreateUserAPI(t *testing.T) {
 				"email":     user.Email,
 				"full_Name": user.FullName,
 			},
+
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.CreateUserParams{
 					Username:       user.Username,
-					HashedPassword: hashPassword,
+					HashedPassword: hashPassword, // Đảm bảo hashPassword được thiết lập đúng
 					FullName:       user.FullName,
-					Email:          user.Email}
+					Email:          user.Email,
+				}
+
 				store.EXPECT().
 					CreateUser(gomock.Any(), EqCreateUserParamsMatcher(arg, password)).
 					Times(1).
 					Return(user, nil)
+
 			},
+
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				requireBodyMatchUser(t, recorder.Body, user)
+
 			},
 		},
 	}
@@ -86,17 +93,22 @@ func TestCreateUserAPI(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
+
 			store := mockdb.NewMockStore(ctrl)
 			//build stubs
 			tc.buildStubs(store)
+
 			//start server
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
+
 			data, err := json.Marshal(tc.body)
 			require.NoError(t, err)
+
 			url := fmt.Sprintf("/users")
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 			require.NoError(t, err)
+
 			server.router.ServeHTTP(recorder, request)
 			//check response
 			tc.checkResponse(recorder)
@@ -104,16 +116,16 @@ func TestCreateUserAPI(t *testing.T) {
 	}
 
 }
-func randomUser(t *testing.T) (db.Users, string) {
-	password := Utill.RandomString(6) // Tạo mật khẩu ngẫu nhiên
-	//hashedPassword, err := Utill.HashPassword(password)
-	//require.NoError(t, err) // Kiểm tra lỗi trong test
+func randomUser(t *testing.T) (user db.Users, password string) {
+	password = util.RandomString(6) // Tạo mật khẩu ngẫu nhiên
+	hashedPassword, err := util.HashPassword(password)
+	require.NoError(t, err) // Kiểm tra lỗi trong test
 
-	user := db.Users{
-		Username:       Utill.RandomOwner(),
-		HashedPassword: password, //mat khau chua duoc hash
-		FullName:       Utill.RandomOwner(),
-		Email:          Utill.RandomEmail(),
+	user = db.Users{
+		Username:       util.RandomOwner(),
+		HashedPassword: hashedPassword, //mat khau chua duoc hash
+		FullName:       util.RandomOwner(),
+		Email:          util.RandomEmail(),
 	}
 	return user, password // Trả về user và mật khẩu chưa băm
 }
@@ -121,8 +133,16 @@ func randomUser(t *testing.T) (db.Users, string) {
 func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.Users) {
 	data, err := ioutil.ReadAll(body)
 	require.NoError(t, err)
+
 	var gotUser db.Users
 	err = json.Unmarshal(data, &gotUser)
 	require.NoError(t, err)
-	require.Equal(t, user, gotUser)
+
+	// So sánh các trường mà bạn muốn kiểm tra, không bao gồm mật khẩu
+	// Bạn có thể loại bỏ so sánh mật khẩu ở đây
+	require.Equal(t, user.Username, gotUser.Username)
+	require.Equal(t, user.FullName, gotUser.FullName)
+	require.Equal(t, user.Email, gotUser.Email)
+	require.Equal(t, user.PasswordChangedAt, gotUser.PasswordChangedAt)
+	require.Equal(t, user.CreatedAt, gotUser.CreatedAt)
 }
